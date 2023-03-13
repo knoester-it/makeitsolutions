@@ -1,5 +1,5 @@
 # Introduction
-This Terraform code is defining a set of modules that are used to create a network topology in Azure.
+This Terraform code is defining a set of modules that are used to create a network Hub-Spoke topology in Azure.
 
 # Build and Test
 Usage: [Explained](https://learn.microsoft.com/en-us/azure/developer/terraform/
