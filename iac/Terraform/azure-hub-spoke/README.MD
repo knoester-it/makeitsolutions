@@ -1,5 +1,5 @@
 # Introduction
-This Terraform code is defining a set of modules that are used to create a network Hub-Spoke topology in Azure.
+This Terraform code is defining a set of modules that are used to create a network Hub-Spoke  topology in Azure.
 
 # Build and Test
 Usage: [Explained](https://learn.microsoft.com/en-us/azure/developer/terraform/
@@ -14,7 +14,7 @@ Usage: [Explained](https://learn.microsoft.com/en-us/azure/developer/terraform/
 # Modules Explained
 Here is an overview of what each module does.
 
-## Main.tf (root module)
+## Main.tf (root)
 1. random_integer: This module generates a random integer between 100 and 299.
 
 2. random_id: This module generates a random ID with a byte length of 4.
@@ -27,9 +27,12 @@ Here is an overview of what each module does.
 
 6. azfirewall: This module creates an Azure Firewall. It uses the rg_name_hub parameter to specify the name of the resource group for the hub, and vnet_name_hub to specify the name of the hub virtual network. The name_spoke parameter is set to the name of the spoke virtual network. The location parameter is set to the Azure region where the resources will be deployed. network_address_space_spoke is used to define the IP address space for the spoke network, and network_address_space_firewall is used to define the IP address space for the Azure Firewall. Finally, the module depends on the network_hub module.
 
-Overall, this Terraform code is creating a hub-and-spoke network topology in Azure, with an Azure Firewall and Key Vault.
+In summary, this Terraform code generates random input, creates several modules that define network resources in Azure, and sets dependencies between the modules. The modules include creating a hub network, spoke network, Azure Key Vault, and Azure Firewall.
 
-## variables.tf (root module)
+### Defining Dependancies
+Finally, the code defines dependencies between the different modules using the depends_on attribute. module.network_hub depends on module.network_spoke, and module.azfirewall 
+
+## variables.tf (root)
 This Terraform code defines a set of input variables that can be used throughout your Terraform code to define different properties of your infrastructure.
 
 Here's a brief explanation of each variable:
