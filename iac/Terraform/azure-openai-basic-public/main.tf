@@ -1,6 +1,3 @@
-data "azurerm_client_config" "current" {
-}
-
 resource "random_string" "prefix" {
   length  = 6
   special = false
