@@ -48,10 +48,10 @@ variable "deployments" {
   }))
   default = [
     {
-      name = "gpt-35-turbo"
+      name = "gpt-35-turbo-16k"
       model = {
-        name = "gpt-35-turbo"
-        version = "0301"
+        name = "gpt-35-turbo-16k"
+        version = "0613"
       }
       rai_policy_name = ""
     }
