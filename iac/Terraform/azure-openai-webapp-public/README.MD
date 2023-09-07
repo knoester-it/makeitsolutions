@@ -22,7 +22,8 @@ This Terraform code sets up a deployment for an "openai" module in Azure. Here's
 - It creates a random string resource named "prefix" with a length of 6 characters and no special, uppercase, or numeric characters.
 - It creates an Azure resource group named "rg-${var.name_prefix}-${var.openai_name}-${random_string.prefix.result}". The location and tags are determined by the corresponding variables.
 
-### It includes a module called "keyvault" defined in a separate module file. This module is responsible for creating an Azure Key Vault with specific configurations.
+### It includes a module called "keyvault" defined in a separate module file. 
+This module is responsible for creating an Azure Key Vault with specific configurations.
 
 ### It defines a module named "openai" with the source located at "./modules/openai".
 Within the module, it configures various properties:
