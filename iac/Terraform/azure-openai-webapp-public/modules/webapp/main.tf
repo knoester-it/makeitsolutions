@@ -1,0 +1,127 @@
+data "azurerm_subscription" "primary" {
+}
+data "azuread_client_config" "current" {
+}
+
+# Create an application
+resource "azuread_application" "webapp" {
+  display_name     = "webapp-${var.name}"
+  identifier_uris  = ["api://webapp-${var.name}.azurewebsites.net"]
+  owners           = [data.azuread_client_config.current.object_id]
+  sign_in_audience = "AzureADMyOrg"
+
+  web {
+    redirect_uris = ["https://webapp-${var.name}.azurewebsites.net/.auth/login/aad/callback"]
+    implicit_grant {
+      access_token_issuance_enabled = false
+      id_token_issuance_enabled     = true
+    }
+  }
+  
+  api {
+    requested_access_token_version = 2
+  }
+}
+
+# Create the Linux App Service Plan
+resource "azurerm_service_plan" "appserviceplan" {
+  name                = "webapp-asp-${var.name}"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  os_type             = "Linux"
+  sku_name            = var.sku_name
+}
+
+# Create the Linux Web App
+resource "azurerm_linux_web_app" "webapp" {
+  name                  = "webapp-${var.name}"
+  location              = var.location
+  resource_group_name   = var.resource_group_name
+  service_plan_id       = azurerm_service_plan.appserviceplan.id
+  https_only            = true
+  site_config { 
+      application_stack {
+        python_version = "3.10"
+    }
+    minimum_tls_version = "1.2"    
+  }
+  identity {
+    type = "SystemAssigned"
+  }  
+  
+  # Configure authentication for webapp
+  auth_settings_v2 {
+    auth_enabled           = true
+    default_provider       = "azureactivedirectory"
+    unauthenticated_action = "RedirectToLoginPage"
+    require_authentication = true
+    require_https          = true
+    active_directory_v2 {
+      client_id = azuread_application.webapp.application_id
+      client_secret_setting_name = "AUTH_CLIENT_SECRET"
+      tenant_auth_endpoint       = "https://sts.windows.net/${data.azuread_client_config.current.tenant_id}/v2.0"
+      allowed_audiences          = ["api://${azuread_application.webapp.application_id}","api://webapp-${var.name}.azurewebsites.net"] #["api://${data.azuread_client_config.current.client_id}"]
+    }
+    login {
+      token_store_enabled = true
+    }
+
+  }
+  app_settings = {
+    AUTH_CLIENT_SECRET                  = "${azuread_application_password.webapp.value}"
+    AZURE_OPENAI_KEY                    = var.openai_primary_access_key
+    AZURE_OPENAI_MAX_TOKENS             = "800"
+    AZURE_OPENAI_MODEL                  = "gpt-35-turbo-16k"
+    AZURE_OPENAI_MODEL_NAME             = "gpt-35-turbo-16k"
+    AZURE_OPENAI_RESOURCE               = var.openai_name
+    AZURE_OPENAI_STOP_SEQUENCE          = ""
+    AZURE_OPENAI_SYSTEM_MESSAGE         = ""
+    AZURE_OPENAI_TEMPERATURE            = "0.7"
+    AZURE_OPENAI_TOP_P                  = "0.95"
+    AZURE_SEARCH_CONTENT_COLUMNS        = ""
+    AZURE_SEARCH_ENABLE_IN_DOMAIN       = "true"
+    AZURE_SEARCH_FILENAME_COLUMN        = ""
+    AZURE_SEARCH_INDEX                  = ""
+    AZURE_SEARCH_INDEX_IS_PRECHUNKED    = "true"
+    AZURE_SEARCH_KEY                    = ""
+    AZURE_SEARCH_SEMANTIC_SEARCH_CONFIG = ""
+    AZURE_SEARCH_SERVICE                = ""
+    AZURE_SEARCH_TITLE_COLUMN           = ""
+    AZURE_SEARCH_TOP_K                  = "5"
+    AZURE_SEARCH_URL_COLUMN             = ""
+    AZURE_SEARCH_USE_SEMANTIC_SEARCH    = "false"
+    SCM_DO_BUILD_DURING_DEPLOYMENT      = "true"
+     
+  }
+}
+
+#  Deploy code from a public GitHub repo
+resource "azurerm_app_service_source_control" "sourcecontrol" {
+  app_id             = azurerm_linux_web_app.webapp.id
+  repo_url           = "https://github.com/microsoft/sample-app-aoai-chatGPT.git"
+  branch             = "main"
+  use_manual_integration = true
+  use_mercurial      = false
+}
+
+# Create a service principal
+resource "azuread_service_principal" "webapp" {
+  application_id = azuread_application.webapp.application_id
+}
+
+# Create a secret for webapp app registration
+resource "azuread_application_password" "webapp" {
+  application_object_id = azuread_application.webapp.object_id
+}
+
+# Use the data source for key vault to input the key vault secret
+data "azurerm_key_vault" "azvault" {
+  name                = var.key_vault_name
+  resource_group_name = var.key_vault_resource_group
+}
+
+resource "azurerm_key_vault_secret" "secret" {
+  name         = azurerm_linux_web_app.webapp.name
+  value        = azuread_application_password.webapp.value
+  key_vault_id = data.azurerm_key_vault.azvault.id
+}

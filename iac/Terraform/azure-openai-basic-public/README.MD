@@ -1,6 +1,8 @@
 # Introduction
 This Terraform code is defining a set of modules that are used to create an Azure OpenAI instance with ChatGPT deployment in Azure.
 
+The sample ChatGPT app is available at https://github.com/microsoft/sample-app-aoai-chatGPT 
+
 # Build and Test
 Usage: [Explained](https://learn.microsoft.com/en-us/azure/developer/terraform/
 1. terraform init
