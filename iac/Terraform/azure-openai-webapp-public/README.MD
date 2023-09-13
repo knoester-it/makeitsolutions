@@ -4,7 +4,7 @@ This Terraform code is defining a set of modules that are used to create an Azur
 The sample ChatGPT app is available at https://github.com/microsoft/sample-app-aoai-chatGPT 
 
 # Build and Test
-Usage: [Explained](https://learn.microsoft.com/en-us/azure/developer/terraform/
+Usage: [Explained](https://learn.microsoft.com/en-us/azure/developer/terraform/)
 1. terraform init
 2. terraform plan -var-file="./environments/production.tfvars" -out main.tfplan
 3. terraform apply main.tfplan
