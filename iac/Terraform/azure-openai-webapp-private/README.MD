@@ -100,7 +100,7 @@ This Terraform code defines three resources in Azure: a virtual network and two 
 ## variables.tf (root)
 This Terraform code defines a set of variables that can be used to configure the deployment of Azure resources. Here's a breakdown of each variable:
 
--name_prefix
+- name_prefix
 An optional prefix for the name of resource groups and resources. It is of type string, has a default value of "Example," and can be set to null.
 - environment
 A string variable representing the environment (e.g., development, production).
